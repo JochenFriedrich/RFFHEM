@@ -2620,6 +2620,13 @@ SIGNALduino_Parse($$$$@)
 	if (@{$hash->{msIdList}} && $rmsg=~ m/^MS;(P\d=-?\d+;){3,8}D=\d+;CP=\d;SP=\d;/) 
 	{
 		$dispatched= SIGNALduino_Parse_MS($hash, $iohash, $name, $rmsg,%signal_parts);
+		if (@{$hash->{muIdList}} && !$dispatched) { ## try synthetic MU message if no matches found
+			my $umsg = $rmsg;
+			$umsg =~ s/MS/MU/;
+			$umsg =~ s/D=([\d])([\d]*);/D=$2$1;/;
+			my %usignal_parts=SIGNALduino_Split_Message($umsg,$name);   ## Split message and save anything in an hash %usignal_parts
+			$dispatched=  SIGNALduino_Parse_MU($hash, $iohash, $name, $rmsg,%usignal_parts);
+		}
 	}
 	# Message unsynced type   -> MU
   	elsif (@{$hash->{muIdList}} && $rmsg=~ m/^MU;(P\d=-?\d+;){3,8}((CP|R)=\d+;){0,2}D=\d+;/)
